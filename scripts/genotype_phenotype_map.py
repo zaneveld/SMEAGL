@@ -8,7 +8,7 @@ class GenotypePhenotypeMap():
         self.Phenotypes = {}
     
     # temporarily set percent_of_sites to 1.0 for now
-    def add_phenotype(self, name, min_value, max_value, percent_of_sites = 0.2):
+    def add_phenotype(self, name, min_value, max_value, percent_of_sites = 1.0):
         """
         Adds a phenotype to the dictionary of phenotypes.
 
