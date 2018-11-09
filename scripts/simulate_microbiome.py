@@ -7,6 +7,8 @@ from matplotlib.image import imread
 from matplotlib.colors import ListedColormap
 
 import matplotlib.animation as animation
+from optparse import OptionParser
+from optparse import OptionGroup
 from random import randint,random
 from copy import copy
 
@@ -552,27 +554,86 @@ def make_transparent_cmap(cmap):
     my_cmap = ListedColormap(my_cmap)
     return my_cmap
 
+    
+	
+def make_option_parser():
+    """Return an optparse OptionParser object"""
+    parser = OptionParser(usage = "SMEAGL (Simulated Microbial Evolution and " + 
+    "Genomic LGT) is designed to simulate microbial ecology and evolution. " + 
+    "The initial application is to explore the hypothesis that high " + 
+    "abundances of DNA mobility elements in some deep sea hydrothermal " + 
+    "vent microbiomes may be more strongly selected in low-richness communities")
+
+    optional_options = OptionGroup(parser, "Optional options")
+
+    optional_options.add_option('-b', '--base_carrying_capacity',\
+    default=10**4, type="int",\
+    help="How many microbes fit in a square (not an edge)? [default:%default]")
+    
+    optional_options.add_option('-e', '--edge_carrying_capacity',\
+    default=10**9, type="int",\
+    help="How many microbes fit in a square if the square is an edge? [default:%default]")
+    
+    optional_options.add_option('-l', '--simulation_length',\
+    default=1200, type="int",\
+    help="How many timesteps shall we run the simulation? [default:%default]")
+    
+    optional_options.add_option('-i', '--input_image',\
+    default="../data/geometry.png", type="string",\
+    help="Input directory for geometry. Defines the geometry of the map. [default:%default]")
+    
+    optional_options.add_option('-t', '--temperature_image',\
+    default="../data/temperature_soft.png", type="string",\
+    help="Input directory for temperature image. Defines which parts are hot. [default:%default]")
+    
+    optional_options.add_option('-f', '--flow_image',\
+    default="../data/vent_flow_soft.png", type="string",\
+    help="Input directory for flow image. Defines regions of upwards vent flow. [default:%default]")
+    
+    optional_options.add_option('-d', '--edge_image',\
+    default="../data/vent_edges.png", type="string",\
+    help="Input directory for edge image. Defines the edges of the " + 
+    "map. (should match geometry) [default:%default]")
+    
+    optional_options.add_option('-v', '--visual_overlay_image',\
+    default='../data/visual_overlay.png', type="string",\
+    help="Input directory for visual overlay image. Purely graphical " + 
+    "overlay to make things pretty (no effect on simulation). [default:%default]")
+    
+    optional_options.add_option('-c', '--color_scheme',\
+    default='viridis' , type="string",\
+    help="Color scheme. [default:%default]")
+    
+    optional_options.add_option('-o', '--output_movie_file',\
+    default='./simulation_video.mp4', type="string",\
+    help="Output directory for simulation video. [default:%default]")
+    
+    parser.add_option_group(optional_options)
+    return parser
+
+
 def main():
     """Run the simulation and save an output movie"""
-    #temporarily hard-coded user files
-    #TODO: make this user specified through a commandline interface    
+    parser = make_option_parser()
+    opts, args = parser.parse_args()
+	
+    ###Simulation parameters
+
+    base_carrying_capacity = opts.base_carrying_capacity #how many microbes fit in a square?
+    edge_carrying_capacity = opts.edge_carrying_capacity #how many more if the square is an edge?
+    simulation_length = opts.simulation_length  #how many timesteps shall we run the simulation?
+
     
-    ###Simulation parameteris
-    base_carrying_capacity = 10**4 #how many microbes fit in a square?
-    edge_carrying_capacity = 10**9 #how many more if the square is an edge?
-    simulation_length = 2000  #how many timesteps shall we run the simulation?
-    
-    input_image = "../data/geometry.png"  #defines the geometry of the map
-    temperature_image = "../data/temperature_soft.png" #defines which parts are hot
-    flow_image = "../data/vent_flow_soft.png" #defines regions of upwards vent flow
-    edge_image = "../data/vent_edges.png" #defines the edges of the map (should match geometry)
+    input_image = opts.input_image  #defines the geometry of the map
+    temperature_image = opts.temperature_image #defines which parts are hot
+    flow_image = opts.flow_image #defines regions of upwards vent flow
+    edge_image = opts.edge_image #defines the edges of the map (should match geometry)
     
     ### Visual and output parameters
-    visual_overlay_image = '../data/visual_overlay.png' 
-    #purely graphical overlay to make things pretty (no effect on simulation)
-    color_scheme = 'viridis' 
-    output_movie_file = './simulation_video.mp4'
 
+    visual_overlay_image = opts.visual_overlay_image #purely graphical overlay to make things pretty (no effect on simulation)
+    color_scheme = opts.color_scheme
+    output_movie_file = opts.output_movie_file
 
     ### Load all the maps used in the simulation and check that they match
 
@@ -594,7 +655,6 @@ def main():
     min_heatmap_value = 0.0
     max_heatmap_value =np.log10(edge_carrying_capacity+base_carrying_capacity)
     
-
     #Manually set up two microbes
     microbes = {}
 
@@ -624,7 +684,6 @@ def main():
       distribution=starting_distribution,migration_rate=10**4)
     microbes[name] = deep_microbe
     
-
     #Set up the simulation
     simulation = Simulation(geometry,\
       base_carrying_capacity=base_carrying_capacity,\
@@ -648,7 +707,6 @@ def main():
     
     update_fn = make_plot_updater(vent_plots,simulation,\
     width=width,height=height)
-    
     
     #The code for writing animation files is based on the
     #matplotlib tutorial here:
