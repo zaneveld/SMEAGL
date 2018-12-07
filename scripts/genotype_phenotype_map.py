@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+
+__author__ = "Hoi Kin Cheng"
+__copyright__ = "Copyright 2019-, The SMEAGL Project"
+__credits__ = ["Jesse Zaneveld","Hoi Kin Cheng"]
+__license__ = "GPL"
+__version__ = "1.0.0-dev"
+__maintainer__ = "Hoi Kin Cheng"
+__email__ = "hoikin@uw.edu"
+__status__ = "Development"
+
 import numpy as np
 import numpy.ma as ma
 
@@ -7,8 +18,7 @@ class GenotypePhenotypeMap():
         self.GenomeLength = genome_length
         self.Phenotypes = {}
     
-    # temporarily set percent_of_sites to 1.0 for now
-    def add_phenotype(self, name, min_value, max_value, percent_of_sites = 1.0):
+    def add_phenotype(self, name, min_value, max_value, random_seed = None, percent_of_sites = 1.0):
         """
         Adds a phenotype to the dictionary of phenotypes.
 
@@ -19,6 +29,8 @@ class GenotypePhenotypeMap():
         phenotype. (0.0 = mask all; 1.0 = no masks at all)
         :return: none
         """
+        if random_seed is not None:
+            np.random.seed(random_seed)
         
         # random values between 0 and 1.
         max_trait_array = np.random.rand(1, self.GenomeLength)
@@ -35,7 +47,6 @@ class GenotypePhenotypeMap():
             
         phenotype = {"min_value": min_value,"max_value": max_value,\
         "max_trait_array": max_trait_array}
-        print (max_trait_array)
         
         # put {name : phenotype} into self.Phenotypes dictionary
         self.Phenotypes[name] = phenotype
@@ -50,11 +61,18 @@ class GenotypePhenotypeMap():
         :param genome: the genome that is being examined
         :return: scaled trait value (optimal value)
         """
+        
+        if (name not in self.Phenotypes):
+            # Raise error here when size of genome array does not match size of max_trait_array
+            raise ValueError("The name of the phenotype does not exist in the list of phenotypes. " +\
+            "Add that phenotype into the list using add_phenotype first.")
+        
         # This checks whether genome has the same length as max_trait_array
         if (genome.size != self.Phenotypes[name]["max_trait_array"].size):
             # Raise error here when size of genome array does not match size of max_trait_array
             raise ValueError("The size of genome must equal the size of max_trait_array, which is " +\
             str(self.Phenotypes[name]["max_trait_array"].shape))
+        
 
         # These steps calculate the scaled_trait_value
         diff = abs(genome - self.Phenotypes[name]["max_trait_array"])
@@ -63,7 +81,6 @@ class GenotypePhenotypeMap():
         scaled_trait_value = slope * mean_diff + self.Phenotypes[name]["max_value"]
         return scaled_trait_value
         
-    # Is this one supposed to be static method? no.
     def get_phenotypes(self, genome):
         """
         Returns a dictionary of phenotypes (e.g., temperature tolerance, edge stickiness, etc.)
