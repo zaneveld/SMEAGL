@@ -608,6 +608,10 @@ def make_option_parser():
     default='./simulation_video.mp4', type="string",\
     help="Output directory for simulation video. [default:%default]")
     
+    optional_options.add_option('-s', '--random_seed',\
+    default=100, type="int",\
+    help="The random seed number. [default:%default]")
+    
     parser.add_option_group(optional_options)
     return parser
 
@@ -655,7 +659,7 @@ def main():
     min_heatmap_value = 0.0
     max_heatmap_value =np.log10(edge_carrying_capacity+base_carrying_capacity)
     
-    #Manually set up two microbes
+    #Manually set up three microbes
     microbes = {}
 
     starting_distribution =  np.zeros((height,width),dtype=float)
