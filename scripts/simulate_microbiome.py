@@ -219,7 +219,11 @@ class Simulation():
     def __init__(self,geometry=None,width=500,height=500,base_carrying_capacity=10**12,\
       edge_carrying_capacity=0,upwards_flow_map = None,edge_map=None,temperature_map = None,\
       microbes={},starting_microbes=2):
-       
+
+        #Log file for microbes' abundances
+        self.AbundancesLog = open("abundances_log.tsv", "w+")
+        self.AbundancesLog.write("timepoint\tmicrobe_name\tabundance\n")
+        
         #Set the simulation to timestep 0 
         self.TimeStep = 0
         self.Width = width
@@ -322,6 +326,10 @@ class Simulation():
         self.apply_carrying_capacity() 
         
         self.TimeStep += 1
+        
+        # write microbe's abundaces at each timestep
+        self.AbundancesLog.write(str(self.TimeStep) + "\t" + microbe_name + 
+        "\t" + str(np.sum(microbe.Distribution)) + "\n")
 
 
     def total_microbes(self):
