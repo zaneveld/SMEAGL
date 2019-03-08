@@ -321,15 +321,17 @@ class Simulation():
  
             if super_verbose:
                 print("Total population ({}):{}".format(microbe_name,np.sum(microbe.Distribution)))    
-        #Carrying capacity adds up counts of *all* microbes,
+        
+            # write microbe's abundaces at each timestep
+            self.AbundancesLog.write(str(self.TimeStep) + "\t" + microbe_name + 
+            "\t" + str(np.sum(microbe.Distribution)) + "\n")
+	
+	#Carrying capacity adds up counts of *all* microbes,
         #so it is outside the for loop    
         self.apply_carrying_capacity() 
         
         self.TimeStep += 1
         
-        # write microbe's abundaces at each timestep
-        self.AbundancesLog.write(str(self.TimeStep) + "\t" + microbe_name + 
-        "\t" + str(np.sum(microbe.Distribution)) + "\n")
 
 
     def total_microbes(self):
